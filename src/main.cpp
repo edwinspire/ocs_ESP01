@@ -1,4 +1,4 @@
-#include <Arduino.h>
+//#include <Arduino.h>
 //#include "LittleFS.h"
 
 #ifdef ESP32
@@ -8,18 +8,20 @@
 #elif defined(ESP8266)
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
+//#include <ESPAsyncTCP.h>
 #endif
 
-#include <ArduinoWebsockets.h>
-#include <ArduinoJson.h>
+//#include <ArduinoWebsockets.h>
+//#include <ArduinoJson.h>
 
 //#include <../include/wifi.cpp>
-#include <../lib/ocs_arduino_library/src/opencommunitysafety.cpp>
-#include <../lib/ocs_arduino_library/src/WebServer.cpp>
+//#include <../lib/ocs_arduino_library/src/opencommunitysafety.cpp>
+#include <opencommunitysafety.cpp>
+//#include <../lib/ocs_arduino_library/src/WebServer.cpp>
+#include <WebServer.cpp>
 #include "AsyncJson.h"
 
-using namespace websockets;
+//using namespace websockets;
 using namespace ocs;
 
 #ifdef ESP32
