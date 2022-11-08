@@ -1,6 +1,3 @@
-//#include <Arduino.h>
-//#include "LittleFS.h"
-
 #ifdef ESP32
 #include <WiFi.h>
 #include <AsyncTCP.h>
@@ -8,20 +5,11 @@
 #elif defined(ESP8266)
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WiFi.h>
-//#include <ESPAsyncTCP.h>
 #endif
 
-//#include <ArduinoWebsockets.h>
-//#include <ArduinoJson.h>
-
-//#include <../include/wifi.cpp>
-//#include <../lib/ocs_arduino_library/src/opencommunitysafety.cpp>
 #include <opencommunitysafety.cpp>
-//#include <../lib/ocs_arduino_library/src/WebServer.cpp>
-#include <WebServer.cpp>
-#include "AsyncJson.h"
 
-//using namespace websockets;
+// using namespace websockets;
 using namespace ocs;
 
 #ifdef ESP32
@@ -31,10 +19,7 @@ ESP8266WiFiMulti wifiMulti;
 #endif
 
 ocs::OpenCommunitySafety ocsClass;
-ocs::LocalStore lstore;
-WebAdmin ocsWebAdmin(80);
-
-#ifdef ESP32
+/*
 const char *echo_org_ssl_ca_cert = R"(-----BEGIN CERTIFICATE-----
 MIIEDzCCAvegAwIBAgIBADANBgkqhkiG9w0BAQUFADBoMQswCQYDVQQGEwJVUzEl
 MCMGA1UEChMcU3RhcmZpZWxkIFRlY2hub2xvZ2llcywgSW5jLjEyMDAGA1UECxMp
@@ -60,13 +45,7 @@ VSJYACPq4xJDKVtHCN2MQWplBqjlIapBtJUhlbl90TSrE9atvNziPTnNvT51cKEY
 WQPJIrSPnNVeKtelttQKbfi3QBFGmh95DmK/D5fs4C8fF5Q=
 -----END CERTIFICATE-----
 )";
-
-#elif defined(ESP8266)
-const char *echo_org_ssl_ca_cert = "2A EE AF BB 00 2B 58 11 72 9E 1E 98 C8 8C C7 82 52 5A 37 E6";
-
-#endif
-
-String deviceId = "";
+*/
 
 #ifdef ESP32
 
@@ -80,94 +59,13 @@ const int gpio_out_01 = 2;
 
 #endif
 
-const String websockets_server_host = "wss://open-community-safety.herokuapp.com/ws/device";
-
-void cb(WiFiClient *client, String path, String method)
-{
-  Serial.println("Entra en el callback " + method);
-}
-
-void notFound(AsyncWebServerRequest *request)
-{
-  request->send(404, F("text/plain"), "Not found");
-}
-
-void getSettings(AsyncWebServerRequest *request)
-{
-  String outputJson = "";
-  serializeJson(ocsClass.toJson(), outputJson);
-  Serial.println(outputJson);
-  request->send(200, F("application/json"), outputJson);
-}
-
-OpenCommunitySafety::delegateSetup setupParameters = []() -> ocs::Config
-{
-  //  Serial.println("Obtener Configuración");
-
-  ocs::Config c;
-  // = ocs::OpenCommunitySafety::getLocalConfig();
-  c.fromLocalStore();
-  // c.caCert_fingerPrint = "2A EE AF BB 00 2B 58 11 72 9E 1E 98 C8 8C C7 82 52 5A 37 E6";
-
-  c.wifi[1].ssid = "edwinspire";
-  c.wifi[1].pwd = "Caracol1980";
-
-  /*
-    ocs::Config c;
-    c.websoketHost = "wss://open-community-safety.herokuapp.com/ws/device";
-    c.wifi[0].ssid = "ocsdefault";
-    c.wifi[0].pwd = "ocs@qwerty";
-
-    c.wifi[1].ssid = "edwinspire";
-    c.wifi[1].pwd = "Caracol1980";
-
-    c.wifi[2].ssid = "edwinspiremovil";
-    c.wifi[2].pwd = "libp1983";
-
-    c.deviceId = "00a0aa00-aa00-0000-0000-000000000000";
-    c.caCert = "2A EE AF BB 00 2B 58 11 72 9E 1E 98 C8 8C C7 82 52 5A 37 E6";
-
-    c.input->gpio = 0;
-    c.output->gpio = 2;
-  */
-
-  return c;
-};
-
-OpenCommunitySafety::delegateSaveConfig saveParameters = [](ocs::Config config) -> void
-{
-  Serial.println(F("--->>> Guarda "));
-  // ocs::OpenCommunitySafety::setLocalConfig(config);
-  config.saveLocalStorage();
-};
-
-AsyncCallbackJsonWebHandler *handlerBody = new AsyncCallbackJsonWebHandler("/setsettings", [](AsyncWebServerRequest *request, JsonVariant &json)
-                                                                           {
-ocsClass.setFromJson(json);
-    request->send(200, F("application/json"), "{}"); });
-
 void setup()
 {
 
   // put your setup code here, to run once:
   Serial.begin(115200);
   delay(10000);
-
-  ocsWebAdmin.on("/getsettings", getSettings);
-  // ocsWebAdmin.on("/setsettings", HTTP_POST, onRequest, onUpload, setSettings);
-  ocsWebAdmin.addHandler(handlerBody); // Para poder leer el body enviado en el request
-
-  ocsWebAdmin.onNotFound(notFound);
-  ocsWebAdmin.setup();
-
-  //  delay(10000);
-
-  ocsClass.setup(setupParameters, saveParameters);
-
-  // delay(5000);
-
-  //  byte size = ocsClass.getMaxSSIDs();
-  // wifiMulti.addAP("edwinspire", "Caracol1980");
+  ocsClass.setup();
 
   for (byte i = 0; i < ocs::MAX_SSID_WIFI; i = i + 1)
   {
@@ -186,8 +84,7 @@ void setup()
     Serial.println(F("WiFi connected"));
     Serial.println(F("IP address: "));
     Serial.println(WiFi.localIP());
-    ocsWebAdmin.begin();
-
+    ocsClass.begin();
     ocsClass.connectWS();
   }
 }
