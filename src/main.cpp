@@ -1,6 +1,5 @@
 #ifdef ESP32
 #include <WiFi.h>
-#include <AsyncTCP.h>
 #include <WiFiMulti.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFiMulti.h>
@@ -91,7 +90,7 @@ void setup()
 
 void loop()
 {
-  Serial.println(F("Loop principal!"));
+ // Serial.println(F("Loop principal!"));
   Serial.println(WiFi.localIP());
   // delay(3000);
   //  put your main code here, to run repeatedly:
