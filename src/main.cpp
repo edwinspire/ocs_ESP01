@@ -8,7 +8,6 @@
 
 #include <opencommunitysafety.cpp>
 
-// using namespace websockets;
 using namespace ocs;
 
 #ifdef ESP32
@@ -66,9 +65,10 @@ void setup()
   delay(10000);
   ocsClass.setup();
 
+  Serial.println("MAX_SSID_WIFI => " + String(ocs::MAX_SSID_WIFI));
   for (byte i = 0; i < ocs::MAX_SSID_WIFI; i = i + 1)
   {
-
+    Serial.println("SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
     if (ocsClass.ConfigParameter.wifi[i].ssid.length() > 5)
     {
       Serial.println("Add SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
@@ -90,10 +90,6 @@ void setup()
 
 void loop()
 {
- // Serial.println(F("Loop principal!"));
-  Serial.println(WiFi.localIP());
-  // delay(3000);
-  //  put your main code here, to run repeatedly:
   if (wifiMulti.run() != WL_CONNECTED)
   {
     Serial.println(F("WiFi not connected!"));
