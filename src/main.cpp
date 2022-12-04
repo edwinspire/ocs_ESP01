@@ -60,6 +60,19 @@ const int gpio_out_01 = 2;
 
 #endif
 
+void checkWifi()
+{
+
+  if (wifiMulti.run() == WL_CONNECTED)
+  {
+    Serial.println(F("WiFi connected"));
+    Serial.println(F("IP address: "));
+    Serial.println(WiFi.localIP());
+    ocsClass.begin();
+    ocsClass.connectWS();
+  }
+}
+
 void setup()
 {
 
@@ -79,15 +92,18 @@ void setup()
     }
   }
 
-  Serial.println(F("Connecting Wifi..."));
+  byte attempts_max = 5;
+  byte attempts = 0;
 
-  if (wifiMulti.run() == WL_CONNECTED)
+  checkWifi();
+
+  while (attempts < attempts_max)
   {
-    Serial.println(F("WiFi connected"));
-    Serial.println(F("IP address: "));
-    Serial.println(WiFi.localIP());
-    ocsClass.begin();
-    ocsClass.connectWS();
+    if (wifiMulti.run() != WL_CONNECTED)
+    {
+      checkWifi();
+    }
+    attempts++;
   }
 }
 
