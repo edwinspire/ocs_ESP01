@@ -16,6 +16,9 @@ WiFiMulti wifiMulti;
 ESP8266WiFiMulti wifiMulti;
 #endif
 
+unsigned int connection_attempts = 0;
+unsigned int connection_attempts_max = 20;
+
 ocs::OpenCommunitySafety ocsClass;
 /*
 const char *echo_org_ssl_ca_cert = R"(-----BEGIN CERTIFICATE-----
@@ -92,8 +95,19 @@ void loop()
 {
   if (wifiMulti.run() != WL_CONNECTED)
   {
-    Serial.println(F("WiFi not connected!"));
-    delay(1000);
+    Serial.print(F("WiFi not connected! connection attempts :"));
+    connection_attempts++;
+    Serial.println(connection_attempts);
+    if (connection_attempts > connection_attempts_max)
+    {
+      ocsClass.reboot();
+    }
+
+    delay(2000);
+  }
+  else
+  {
+    connection_attempts = 0;
   }
   ocsClass.loop();
 }
