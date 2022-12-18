@@ -1,13 +1,15 @@
+
 #ifdef ESP32
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #elif defined(ESP8266)
 #include <ESP8266WiFiMulti.h>
-#include <ESP8266WiFi.h>
+// #include <ESP8266WiFi.h>
 #endif
 
 #include <opencommunitysafety.cpp>
 
+const uint32_t connectTimeoutMs = 10000;
 using namespace ocs;
 
 #ifdef ESP32
@@ -15,9 +17,6 @@ WiFiMulti wifiMulti;
 #elif defined(ESP8266)
 ESP8266WiFiMulti wifiMulti;
 #endif
-
-unsigned int connection_attempts = 0;
-unsigned int connection_attempts_max = 20;
 
 ocs::OpenCommunitySafety ocsClass;
 /*
@@ -48,6 +47,7 @@ WQPJIrSPnNVeKtelttQKbfi3QBFGmh95DmK/D5fs4C8fF5Q=
 )";
 */
 
+/*
 #ifdef ESP32
 
 const int gpio_in_01 = 32;
@@ -59,11 +59,32 @@ const int gpio_in_01 = 0;
 const int gpio_out_01 = 2;
 
 #endif
+*/
 
-void checkWifi()
+void setup()
 {
 
-  if (wifiMulti.run() == WL_CONNECTED)
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  delay(5000);
+  ocsClass.setup();
+  delay(5000);
+
+  for (byte i = 0; i < ocs::MAX_SSID_WIFI; i = i + 1)
+  {
+
+    if (ocsClass.ConfigParameter.wifi[i].ssid.length() > 5)
+    {
+      Serial.println("Add SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
+      wifiMulti.addAP(ocsClass.ConfigParameter.wifi[i].ssid.c_str(), ocsClass.ConfigParameter.wifi[i].pwd.c_str());
+    }
+  }
+
+  //wifiMulti.addAP("edwinspire", "Caracol1980");
+
+  Serial.println(F("Connecting Wifi..."));
+
+  if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED)
   {
     Serial.println(F("WiFi connected"));
     Serial.println(F("IP address: "));
@@ -73,57 +94,32 @@ void checkWifi()
   }
 }
 
-void setup()
-{
-
-  // put your setup code here, to run once:
-  Serial.begin(115200);
-  delay(10000);
-  ocsClass.setup();
-
-  Serial.println("MAX_SSID_WIFI => " + String(ocs::MAX_SSID_WIFI));
-  for (byte i = 0; i < ocs::MAX_SSID_WIFI; i = i + 1)
-  {
-    Serial.println("SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
-    if (ocsClass.ConfigParameter.wifi[i].ssid.length() > 5)
-    {
-      Serial.println("Add SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
-      wifiMulti.addAP(ocsClass.ConfigParameter.wifi[i].ssid.c_str(), ocsClass.ConfigParameter.wifi[i].pwd.c_str());
-    }
-  }
-
-  byte attempts_max = 5;
-  byte attempts = 0;
-
-  checkWifi();
-
-  while (attempts < attempts_max)
-  {
-    if (wifiMulti.run() != WL_CONNECTED)
-    {
-      checkWifi();
-    }
-    attempts++;
-  }
-}
-
 void loop()
 {
-  if (wifiMulti.run() != WL_CONNECTED)
-  {
-    Serial.print(F("WiFi not connected! connection attempts :"));
-    connection_attempts++;
-    Serial.println(connection_attempts);
-    if (connection_attempts > connection_attempts_max)
-    {
-      ocsClass.reboot();
-    }
+/*
+Serial.println(F("--------------------------"));
 
-    delay(2000);
-  }
-  else
+  Serial.print(F("getFreeHeap: "));
+  Serial.println(ESP.getFreeHeap());
+
+  Serial.print(F("getFreeContStack: "));
+  Serial.println(ESP.getFreeContStack());
+
+  Serial.print(F("getHeapFragmentation: "));
+  Serial.println(ESP.getHeapFragmentation());
+
+  Serial.print(F("getMaxFreeBlockSize: "));
+  Serial.println(ESP.getMaxFreeBlockSize());
+
+  delay(1000);
+  */
+  // Serial.println(F("Loop principal!"));
+  //  Serial.println(WiFi.localIP());
+  //  put your main code here, to run repeatedly:
+  if (wifiMulti.run(connectTimeoutMs) != WL_CONNECTED)
   {
-    connection_attempts = 0;
+    Serial.println(F("WiFi not connected!"));
+    delay(1000);
   }
   ocsClass.loop();
 }
