@@ -10,7 +10,7 @@
 #include <Interval.cpp>
 #include <opencommunitysafety.cpp>
 
-//const uint32_t connectTimeoutMs = 10000;
+const uint32_t connectTimeoutMs = 10000;
 using namespace ocs;
 
 #ifdef ESP32
@@ -29,21 +29,24 @@ void wifi_reconnect()
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    Serial.println("Está conectado...");
+    Serial.println(F("Está conectado... "));
+    Serial.println(WiFi.SSID());
+    Serial.println(WiFi.localIP());
   }
   else
   {
     Serial.println(F("Connecting Wifi..."));
-    if (wifiMulti.run() == WL_CONNECTED)
+    if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED)
     {
       Serial.println(F("WiFi connected"));
-      Serial.println(F("IP address: "));
-      Serial.println(WiFi.localIP());
-      Serial.println(WiFi.SSID());
+      //Serial.println(F("IP address: "));
+      //Serial.println(WiFi.localIP());
+      //Serial.println(WiFi.SSID());
       ocsClass.ip = WiFi.localIP().toString();
       ocsClass.ssid = WiFi.SSID();
       ocsClass.begin();
-      ocsClass.connectWS();
+      ocsClass.connect_websocket();
+   //   ocsClass.connectWS();
     }
     // WiFi.disconnect();
   }
@@ -68,22 +71,9 @@ void setup()
     }
   }
 
-  // wifiMulti.addAP("edwinspire", "Caracol1980");
   wifi_reconnect();
   intervalConnectWiFi.setup(15000, &wifi_reconnect); // check wifi each 15 seconds
 
-/*
-  Serial.println(F("Connecting Wifi..."));
-
-  if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED)
-  {
-    Serial.println(F("WiFi connected"));
-    Serial.println(F("IP address: "));
-    Serial.println(WiFi.localIP());
-    ocsClass.begin();
-    ocsClass.connectWS();
-  }
-  */
 }
 
 void loop()
