@@ -39,14 +39,14 @@ void wifi_reconnect()
     if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED)
     {
       Serial.println(F("WiFi connected"));
-      //Serial.println(F("IP address: "));
-      //Serial.println(WiFi.localIP());
-      //Serial.println(WiFi.SSID());
+      // Serial.println(F("IP address: "));
+      // Serial.println(WiFi.localIP());
+      // Serial.println(WiFi.SSID());
       ocsClass.ip = WiFi.localIP().toString();
       ocsClass.ssid = WiFi.SSID();
       ocsClass.begin();
       ocsClass.connect_websocket();
-   //   ocsClass.connectWS();
+      //   ocsClass.connectWS();
     }
     // WiFi.disconnect();
   }
@@ -73,38 +73,10 @@ void setup()
 
   wifi_reconnect();
   intervalConnectWiFi.setup(15000, &wifi_reconnect); // check wifi each 15 seconds
-
 }
 
 void loop()
 {
-  /*
-  Serial.println(F("--------------------------"));
-
-    Serial.print(F("getFreeHeap: "));
-    Serial.println(ESP.getFreeHeap());
-
-    Serial.print(F("getFreeContStack: "));
-    Serial.println(ESP.getFreeContStack());
-
-    Serial.print(F("getHeapFragmentation: "));
-    Serial.println(ESP.getHeapFragmentation());
-
-    Serial.print(F("getMaxFreeBlockSize: "));
-    Serial.println(ESP.getMaxFreeBlockSize());
-
-    delay(1000);
-    */
-  // Serial.println(F("Loop principal!"));
-  //  Serial.println(WiFi.localIP());
-  //  put your main code here, to run repeatedly:
-  /*
-  if (wifiMulti.run(connectTimeoutMs) != WL_CONNECTED)
-  {
-    Serial.println(F("WiFi not connected!"));
-    delay(1000);
-  }
-  */
-    intervalConnectWiFi.loop();
+  intervalConnectWiFi.loop();
   ocsClass.loop();
 }
