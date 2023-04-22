@@ -1,82 +1,46 @@
 
-#ifdef ESP32
-#include <WiFi.h>
-#include <WiFiMulti.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFiMulti.h>
-// #include <ESP8266WiFi.h>
+#include <ESP8266WebServerSecure.h>
+#include <ESP8266mDNS.h>
+#include <WiFiClient.h>
+#include "LittleFS.h"
+#include "../lib/WebServer.cpp"
+
+#ifndef STASSID
+#define STASSID "edwinspire"
+#define STAPSK "Caracol1980"
 #endif
 
-#include <Interval.cpp>
-#include <opencommunitysafety.cpp>
+ocs::OCSWebAdmin webAdmin;
 
-const uint32_t connectTimeoutMs = 10000;
-using namespace ocs;
+const char *ssid = STASSID;
+const char *password = STAPSK;
 
-#ifdef ESP32
-WiFiMulti wifiMulti;
-#elif defined(ESP8266)
-ESP8266WiFiMulti wifiMulti;
-#endif
-
-ocs::OpenCommunitySafety ocsClass;
-edwinspire::Interval intervalConnectWiFi;
-
-void wifi_reconnect()
+void setup(void)
 {
-  Serial.println(F("wifi_reconnect..."));
-  Serial.println(WiFi.status());
-
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    Serial.println(F("Está conectado... "));
-    Serial.println(WiFi.SSID());
-    Serial.println(WiFi.localIP());
-  }
-  else
-  {
-    Serial.println(F("Connecting Wifi..."));
-    if (wifiMulti.run(connectTimeoutMs) == WL_CONNECTED)
-    {
-      Serial.println(F("WiFi connected"));
-      // Serial.println(F("IP address: "));
-      // Serial.println(WiFi.localIP());
-      // Serial.println(WiFi.SSID());
-      ocsClass.ip = WiFi.localIP().toString();
-      ocsClass.ssid = WiFi.SSID();
-      ocsClass.begin();
-      ocsClass.connect_websocket();
-      //   ocsClass.connectWS();
-    }
-    // WiFi.disconnect();
-  }
-}
-
-void setup()
-{
-
-  // put your setup code here, to run once:
   Serial.begin(115200);
-  // delay(5000);
-  ocsClass.setup();
-  delay(5000);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+  while (WiFi.status() != WL_CONNECTED)
+  { // Wait for connection
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.printf_P(PSTR("\nConnected to %s with IP address: %s\n"), ssid, WiFi.localIP().toString().c_str());
 
-  for (byte i = 0; i < ocs::MAX_SSID_WIFI; i = i + 1)
+  configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+
+  if (MDNS.begin("esp8266"))
   {
-
-    if (ocsClass.ConfigParameter.wifi[i].ssid.length() > 5)
-    {
-      Serial.println("Add SSID => " + ocsClass.ConfigParameter.wifi[i].ssid);
-      wifiMulti.addAP(ocsClass.ConfigParameter.wifi[i].ssid.c_str(), ocsClass.ConfigParameter.wifi[i].pwd.c_str());
-    }
+    Serial.println("MDNS responder started");
   }
 
-  wifi_reconnect();
-  intervalConnectWiFi.setup(15000, &wifi_reconnect); // check wifi each 15 seconds
+  webAdmin.setup();
 }
 
-void loop()
+void loop(void)
 {
-  intervalConnectWiFi.loop();
-  ocsClass.loop();
+  webAdmin.loop();
+  MDNS.update();
+  yield();
 }
